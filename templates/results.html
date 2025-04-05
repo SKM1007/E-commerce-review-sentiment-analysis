@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .sentiment-positive { color: #28a745; border-left: 4px solid #28a745; }
+        .sentiment-neutral { color: #ffc107; border-left: 4px solid #ffc107; }
+        .sentiment-negative { color: #dc3545; border-left: 4px solid #dc3545; }
+        .review-card {
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .chart-container {
+            max-width: 400px;
+            margin: auto;
+        }
+        footer {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">{{ product_name }}</h1>
+
+        {% if product_image %}
+            <img src="{{ product_image }}" alt="{{ product_name }}" class="img-fluid rounded mx-auto d-block mb-4" style="max-width:300px;">
+        {% endif %}
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body text-center">
+                        <h5>Total Reviews</h5>
+                        <p>{{ total_reviews }}</p>
+                        <h5>Positive</h5>
+                        <p class="text-success">{{ counts['positive'] }}</p>
+                        <h5>Neutral</h5>
+                        <p class="text-warning">{{ counts['neutral'] }}</p>
+                        <h5>Negative</h5>
+                        <p class="text-danger">{{ counts['negative'] }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="col-md-8 d-flex align-items-center justify-content-center">
+                <div class="chart-container">
+                    <canvas id="sentimentChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reviews Section -->
+        <div class="mt-5">
+            <h3>Detailed Reviews Analysis</h3>
+            {% for review in reviews %}
+                <div class="review-card sentiment-{{ review.sentiment }}">
+                    <!-- Comment -->
+                    <p>{{ review.text }}</p>
+
+                    <!-- Accuracy/Confidence Text -->
+                    <small style="
+                        {% if review.sentiment == 'positive' %}color:#28a745;
+                        {% elif review.sentiment == 'neutral' %}color:#ffc107;
+                        {% else %}color:#dc3545;{% endif %}">
+                        Accuracy: {{ review.confidence }}
+                    </small>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Analyze Another Button -->
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-primary btn-lg">Analyze Another Product</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>&copy; Built by WildTech</footer>
+
+    <!-- Chart.js Script -->
+    <script>
+        const ctx = document.getElementById('sentimentChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Positive', 'Neutral', 'Negative'],
+                datasets: [{
+                    data: [{{ counts['positive'] }}, {{ counts['neutral'] }}, {{ counts['negative'] }}],
+                    backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    title: { display: true, text: 'Sentiment Distribution' }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
